@@ -107,10 +107,51 @@ ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 +
 
 # Train/Test Split
 
-set.seed(000)
+set.seed(110)
 training_indeces <- createDataPartition(data$target, p = .7, list = FALSE)
 data.train <- data[ training_indeces,]
 data.test  <- data[-training_indeces,]
 
 ###############################################################
 
+# Model
+
+library(caret)
+library(e1071)
+
+## 10 fold Cross-validation
+
+fitControl <- trainControl(method="cv", number=10)
+
+## Naive Bayes
+
+model.nb <- train(form = target ~ ., 
+                  data = data.train,
+                  method = "naive_bayes",
+                  trControl = fitControl)
+model.nb
+
+plot(model.nb)
+
+## Tree-Augmented Naive Bayes 
+
+#TODO
+
+#model.tan <- train(form = target ~ ., 
+#                   data = data.train,
+#                   method = "tan",
+#                   #metric = ifelse(is.factor(y), "Accuracy", "RMSE"),
+#                   #maximize = ifelse(metric %in% c("RMSE", "logLoss", "MAE"), FALSE, TRUE),
+#                   trControl = fitControl,
+#                   na.action = na.fail)
+
+#model.tan
+
+#plot(model.tan)
+
+library(bnlearn)
+
+tan = tree.bayes(data.test, "A")
+fitted = bn.fit(tan, learning.test, method = "bayes")
+pred = predict(fitted, learning.test)
+table(pred, learning.test[, "A"])
