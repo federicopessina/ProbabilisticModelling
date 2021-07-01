@@ -1,7 +1,6 @@
 ###############################################################
 
 # Import dataset
-
 data <- read.csv('heart.csv')
 head(data)
 
@@ -15,6 +14,9 @@ summary(data)
 
 library(psych)
 describe(data)
+
+## remove NaNs
+data <- na.omit(data)
 
 ## rename variable mispelled
 library(data.table)
@@ -48,6 +50,55 @@ data$angina_pain <- as.factor(data$angina_pain)
 data$slope <- as.factor(data$slope)
 data$thalassemia <- as.factor(data$thalassemia)
 data$hearth_disease <- as.factor(data$hearth_disease)
+
+## transform numerical variables in categorical variable
+
+library(ggpubr) # take a look at the distribution prior
+
+ggplot(data, aes(data$age)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$blood_pressure)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$ecg_depression)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+library(dplyr)
+
+data <- data %>% 
+  mutate(agegroup = case_when(age >= 0  & age <= 40 ~ '0-40',
+                              age > 40  & age <= 50 ~ '41-50',
+                              age > 50  & age <= 60 ~ '51-60',
+                              age > 60  & age <= 70 ~ '61-70',
+                              age > 70 ~ '71-100'))
+
+data <- data %>% 
+  mutate(agegroup = case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
+                              blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
+                              blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
+                              blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
+                              blood_pressure > 160 ~ '161-200'))
+
+data <- data %>% 
+  mutate(agegroup = case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
+                              ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
+                              ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
+                              ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
+                              ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
+                              ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
+                              ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
+                              ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
+                              ecg_depression > 4 ~ '4.00-8.00'))
+
+
+# transform categorical variables into  R factors
+data$age <- as.factor(data$age)
+data$blood_pressure <- as.factor(data$blood_pressure)
+data$ecg_depression <- as.factor(data$ecg_depression)
 
 ## give a better name to the factor values for the graphs
 levels(data$sex) <- c("Female", "Male")
@@ -119,6 +170,14 @@ ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 +
             rremove("x.text"), 
             #labels = c("A", "B"),
             ncol = 2, nrow = 4)
+
+###############################################################
+library(bnlearn)
+
+bn_data <- data.frame(data)
+
+res <- hc(bn_data) #FIXME
+plot(res)
 
 ###############################################################
 
