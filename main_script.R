@@ -15,12 +15,6 @@ summary(data)
 library(psych)
 describe(data)
 
-## remove NaNs
-library(Amelia)
-missmap(data)
-
-data <- na.omit(data)
-
 ## rename variable mispelled
 library(data.table)
 setnames(data, "ï..age", "age")
@@ -36,50 +30,16 @@ setnames(data, "ca", "num_major_vessels")
 setnames(data, "thal", "thalassemia")
 setnames(data, "target", "hearth_disease")
 
-## drop the null values
-colSums(is.na(data))
+## give a better name to the factor values for the graphs
+levels(data$sex) <- c("Female", "Male")
+levels(data$chest_pain) <- c("Asymptomatic", "Atypical angina", "No angina", "Typical angina")
+levels(data$blood_sugar) <- c("No", "Yes")
+levels(data$rest_cardio) <- c("Hypertrophy", "Normal", "Abnormalities")
+levels(data$angina_pain) <- c("No", "Yes")
+levels(data$slope) <- c("Descending", "Flat", "Ascending")
+levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
+levels(data$hearth_disease) <- c("Yes", "No")
 
-missing_num_major_vessels_indeces <- which(data$num_major_vessels %in% 4)
-missing_thal_indeces <-which(data$thalassemia %in% 0)
-missing_values_indeces <- c(missing_num_major_vessels_indeces, missing_thal_indeces)
-data <- data[-missing_values_indeces, ]
-
-## transform categorical variable to R factors
-data$sex <- as.factor(data$sex)
-data$chest_pain <- as.factor(data$chest_pain)
-data$blood_sugar <- as.factor(data$blood_sugar)
-data$rest_cardio <- as.factor(data$rest_cardio)
-data$angina_pain <- as.factor(data$angina_pain)
-data$slope <- as.factor(data$slope)
-data$thalassemia <- as.factor(data$thalassemia)
-data$hearth_disease <- as.factor(data$hearth_disease)
-
-## transform numerical variables in categorical variable
-
-library(ggpubr) # take a look at the distribution prior
-
-ggplot(data, aes(data$age)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$blood_pressure)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$ecg_depression)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(age, colour = hearth_disease)) +
-  geom_freqpoly(binwidth = 1) + labs(title="Age Distribution by Outcome")
-
-ggplot(data, aes(x = age, fill = hearth_disease, color = hearth_disease)) +
-  geom_histogram(binwidth = 1) + labs(title = "Age Distribution by Outcome")
-  c + theme_bw()
-
-library(GGally)
-ggpairs(data)
-  
 library(dplyr)
 
 data <- data %>% 
@@ -107,21 +67,101 @@ data <- data %>%
                               ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
                               ecg_depression > 4 ~ '4.00-8.00'))
 
+data <- data %>% 
+  mutate(agegroup = case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
+                              cholesterol > 20  & cholesterol <= 40 ~ '20-40',
+                              cholesterol > 40  & cholesterol <= 60 ~ '40-60',
+                              cholesterol > 60  & cholesterol <= 80 ~ '60-80',
+                              cholesterol > 80  & cholesterol <= 100 ~ '80-100',
+                              cholesterol > 100  & cholesterol <= 120 ~ '100-120',
+                              cholesterol > 120  & cholesterol <= 140 ~ '120-140',
+                              cholesterol > 140 ~ '140-160'))
 
-# transform categorical variables into  R factors
+data <- data %>% 
+  mutate(agegroup = case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
+                              max_cardio > 100  & max_cardio <= 120 ~ '100-120',
+                              max_cardio > 120  & max_cardio <= 140 ~ '120-140',
+                              max_cardio > 140  & max_cardio <= 160 ~ '140-160',
+                              max_cardio > 160  & max_cardio <= 180 ~ '160-180',
+                              max_cardio > 180 ~ '180-220'))
+
+
+
+## drop the null values
+colSums(is.na(data))
+library(Amelia)
+missmap(data)
+data <- na.omit(data) # not necessary
+
+
+
+missing_num_major_vessels_indeces <- which(data$num_major_vessels %in% 4)
+missing_thal_indeces <-which(data$thalassemia %in% 0)
+missing_values_indeces <- c(missing_num_major_vessels_indeces, missing_thal_indeces)
+data <- data[-missing_values_indeces, ]
+
+
+## transform numerical variables in categorical variable
+
+library(ggpubr) # take a look at the distribution prior
+
+ggplot(data, aes(data$age)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$blood_pressure)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$ecg_depression)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$cholesterol)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$max_cardio)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$num_major_vessels)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(data$agegroup)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+
+ggplot(data, aes(age, colour = hearth_disease)) +
+  geom_freqpoly(binwidth = 1) + labs(title="Age Distribution by Outcome")
+
+ggplot(data, aes(x = age, fill = hearth_disease, color = hearth_disease)) +
+  geom_histogram(binwidth = 1) + labs(title = "Age Distribution by Outcome")
+  c + theme_bw()
+
+library(GGally)
+ggpairs(data,
+        title = "Pairs Graph")
+
+## transform categorical variable to R factors
+data$sex <- as.factor(data$sex)
+data$chest_pain <- as.factor(data$chest_pain)
+data$blood_sugar <- as.factor(data$blood_sugar)
+data$rest_cardio <- as.factor(data$rest_cardio)
+data$angina_pain <- as.factor(data$angina_pain)
+data$slope <- as.factor(data$slope)
+data$thalassemia <- as.factor(data$thalassemia)
+data$hearth_disease <- as.factor(data$hearth_disease)
+
 data$age <- as.factor(data$age)
 data$blood_pressure <- as.factor(data$blood_pressure)
 data$ecg_depression <- as.factor(data$ecg_depression)
+data$cholesterol <- as.factor(data$cholesterol)
+data$max_cardio <- as.factor(data$max_cardio)
+data$num_major_vessels <- as.factor(data$num_major_vessels)
+data$agegroup <- as.factor(data$agegroup)
 
-## give a better name to the factor values for the graphs
-levels(data$sex) <- c("Female", "Male")
-levels(data$chest_pain) <- c("Asymptomatic", "Atypical angina", "No angina", "Typical angina")
-levels(data$blood_sugar) <- c("No", "Yes")
-levels(data$rest_cardio) <- c("Hypertrophy", "Normal", "Abnormalities")
-levels(data$angina_pain) <- c("No", "Yes")
-levels(data$slope) <- c("Descending", "Flat", "Ascending")
-levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
-levels(data$hearth_disease) <- c("Yes", "No")
 
 # Graphical Exploration
 
@@ -182,55 +222,7 @@ library(ggpubr)
 ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 + 
             rremove("x.text"), 
             #labels = c("A", "B"),
-            ncol = 2, nrow = 4)
-
-###############################################################
-library(bnlearn)
-
-bn_data <- data.frame(data)
-
-res <- hc(bn_data) #FIXME
-plot(res)
-
-###############################################################
-
-# Train/Test Split
-
-set.seed(110)
-training_indeces <- createDataPartition(data$target, p = .7, list = FALSE)
-data.train <- data[ training_indeces,]
-data.test  <- data[-training_indeces,]
-
-###############################################################
-
-# Model
-
-library(caret)
-library(e1071)
-
-## 10 fold Cross-validation
-
-fitControl <- trainControl(method="cv", number=10)
-
-## Logistic Regression
-library(corrplot)
-library(tidyverse)
-library(psych)
-library(reshape2)
-library(ggthemes)
-library(gridExtra)
-library(caret)
-
-set.seed(888)
-
-fit <- glm(hearth_disease ~., data, family = "binomial")
-p <- predict(fit, newdata = data, type = "response")
-pred <- ifelse(p > 0.5, 1, 0)
-tab <- table(Predicted = pred, Actual = data$hearth_disease)
-c <- as.data.frame(fit$coefficients)
-c$name <- rownames(c)
-colnames(c)[1] <- "coef"
-c$odds <- exp(c$coef)
+            ncol = 2, nrow = 4) #FIXME
 
 ### plot factors indicating hearth disease
 
@@ -276,31 +268,115 @@ c <- ggplot(data, aes(restecg, target)) +
 
 grid.arrange(a, b, c, nrow = 1) #FIXME
 
+###############################################################
+library(bnlearn)
+
+bn_data <- as.data.frame(data)
+
+#bn_data_example <- as.data.frame(bn_data[, c("age", "sex", "chest_pain",
+#                                             "blood_pressure", "cholesterol",
+#                                             "blood_sugar", "rest_cardio",
+#                                             "max_cardio", "angina_pain",
+#                                             "ecg_depression", "slope",
+#                                             "num_major_vessels", "thalassemia",
+#                                             "hearth_disease", "agegroup")])
+
+res <- hc(bn_data)
+
+plot(res)
+
+###############################################################
+
+# Train/Test Split
+
+set.seed(888)
+
+training_indeces <- createDataPartition(y = data$hearth_disease, 
+                                        p = 0.7, 
+                                        list = FALSE)
+data.train <- data[ training_indeces,]
+data.test  <- data[-training_indeces,]
+
+prop.table(table(data.train$hearth_disease)) * 100 # check balance
+prop.table(table(data.test$hearth_disease)) * 100
+
+###############################################################
+
+# Model
+
+library(caret)
+library(e1071)
+library(corrplot)
+library(tidyverse)
+library(psych)
+library(reshape2)
+library(ggthemes)
+library(gridExtra)
+
+## 10 fold Cross-validation
+
+fitControl <- trainControl(method = "cv", number = 10)
+
+###############################################################
+
+## Logistic Regression
+
+set.seed(888)
+
+fit <- glm(hearth_disease ~., data, family = "binomial")
+p <- predict(fit, newdata = data, type = "response")
+pred <- ifelse(p > 0.5, 1, 0)
+tab <- table(Predicted = pred, Actual = data$hearth_disease)
+c <- as.data.frame(fit$coefficients)
+c$name <- rownames(c)
+colnames(c)[1] <- "coef"
+c$odds <- exp(c$coef)
+
+###############################################################
+
 ## Naive Bayes
 
-model.nb <- train(form = target ~ ., 
+## create and train
+
+model.nb <- train(form = hearth_disease ~ ., # formula
                   data = data.train,
                   method = "naive_bayes",
-                  trControl = fitControl)
-model.nb
+                  trControl = fitControl) # 10 cv
 
-plot(model.nb)
+model.nb # model infos
+
+### evaluate
+
+predict.nb <- predict(model.nb,
+                   newdata = data.test)
+
+confusion_matrix.nb <- 
+  confusionMatrix(predict.nb, data.test$hearth_disease)
+
+plot(model.nb)      # distribution
+confusion_matrix.nb # results
+
+
+var_imp.nb <- varImp(model.nb) # variable importance
+plot(var_imp.nb)
+
+###############################################################
 
 ## Tree-Augmented Naive Bayes 
 
-#TODO
+#FIXME
 
-#model.tan <- train(form = target ~ ., 
-#                   data = data.train,
-#                   method = "tan",
-#                   #metric = ifelse(is.factor(y), "Accuracy", "RMSE"),
-#                   #maximize = ifelse(metric %in% c("RMSE", "logLoss", "MAE"), FALSE, TRUE),
-#                   trControl = fitControl,
-#                   na.action = na.fail)
+model.tan <- train(form = hearth_disease ~ ., 
+                   data = data.train,
+                   method = "tan",
+                   metric = ifelse(is.factor(bn_data$hearth_disease), "Accuracy", "RMSE"),
+                   maximize = ifelse(metric %in% c("RMSE", "logLoss", "MAE"), FALSE, TRUE),
+                   trControl = fitControl,
+                   na.action = na.fail)
 
-#model.tan
+model.tan
 
-#plot(model.tan)
+plot(model.tan)
 
 library(bnlearn)
 
