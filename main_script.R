@@ -16,6 +16,9 @@ library(psych)
 describe(data)
 
 ## remove NaNs
+library(Amelia)
+missmap(data)
+
 data <- na.omit(data)
 
 ## rename variable mispelled
@@ -67,6 +70,16 @@ ggplot(data, aes(data$ecg_depression)) +
   geom_bar(fill = "#0073C2FF") +
   theme_pubclean()
 
+ggplot(data, aes(age, colour = hearth_disease)) +
+  geom_freqpoly(binwidth = 1) + labs(title="Age Distribution by Outcome")
+
+ggplot(data, aes(x = age, fill = hearth_disease, color = hearth_disease)) +
+  geom_histogram(binwidth = 1) + labs(title = "Age Distribution by Outcome")
+  c + theme_bw()
+
+library(GGally)
+ggpairs(data)
+  
 library(dplyr)
 
 data <- data %>% 
