@@ -313,24 +313,12 @@ library(reshape2)
 library(ggthemes)
 library(gridExtra)
 
-## 10 fold Cross-validation
-
-fitControl <- trainControl(method = "cv", number = 10)
-
 ###############################################################
 
-## Logistic Regression
+## Cross-Validation
 
-set.seed(888)
-
-fit <- glm(hearth_disease ~., data, family = "binomial")
-p <- predict(fit, newdata = data, type = "response")
-pred <- ifelse(p > 0.5, 1, 0)
-tab <- table(Predicted = pred, Actual = data$hearth_disease)
-c <- as.data.frame(fit$coefficients)
-c$name <- rownames(c)
-colnames(c)[1] <- "coef"
-c$odds <- exp(c$coef)
+fitControl <- trainControl(method = "cv", # cross validation
+                           number = 10)   # number of folds 
 
 ###############################################################
 
