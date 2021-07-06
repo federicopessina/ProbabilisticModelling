@@ -1,12 +1,13 @@
 ###############################################################
 
 # Import dataset
+
 data <- read.csv('heart.csv')
 head(data)
 
 ###############################################################
 
-# Data Exploration and Pre-Processing
+#Pre-Processing
 
 ## general summary
 dim(data)
@@ -40,8 +41,8 @@ levels(data$slope) <- c("Descending", "Flat", "Ascending")
 levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
 levels(data$hearth_disease) <- c("Yes", "No")
 
+## change continuous variables into cathegorical
 library(dplyr)
-
 data <- data %>% 
   mutate(agegroup = case_when(age >= 0  & age <= 40 ~ '0-40',
                               age > 40  & age <= 50 ~ '41-50',
@@ -93,8 +94,6 @@ library(Amelia)
 missmap(data)
 data <- na.omit(data) # not necessary
 
-
-
 missing_num_major_vessels_indeces <- which(data$num_major_vessels %in% 4)
 missing_thal_indeces <-which(data$thalassemia %in% 0)
 missing_values_indeces <- c(missing_num_major_vessels_indeces, missing_thal_indeces)
@@ -102,8 +101,7 @@ data <- data[-missing_values_indeces, ]
 
 
 ## transform numerical variables in categorical variable
-
-library(ggpubr) # take a look at the distribution prior
+library(ggpubr) # take a look at the distribution
 
 ggplot(data, aes(data$age)) +
   geom_bar(fill = "#0073C2FF") +
@@ -134,10 +132,13 @@ ggplot(data, aes(data$agegroup)) +
   theme_pubclean()
 
 ggplot(data, aes(age, colour = hearth_disease)) +
-  geom_freqpoly(binwidth = 1) + labs(title="Age Distribution by Outcome")
+  geom_freqpoly(binwidth = 1) + 
+  labs(title="Age Distribution by Outcome")
 
-ggplot(data, aes(x = age, fill = hearth_disease, color = hearth_disease)) +
-  geom_histogram(binwidth = 1) + labs(title = "Age Distribution by Outcome")
+ggplot(data, aes(x = age, fill = hearth_disease, 
+                 color = hearth_disease)) +
+  geom_histogram(binwidth = 1) + 
+  labs(title = "Age Distribution by Outcome")
   c + theme_bw()
 
 library(GGally)
@@ -162,59 +163,66 @@ data$max_cardio <- as.factor(data$max_cardio)
 data$num_major_vessels <- as.factor(data$num_major_vessels)
 data$agegroup <- as.factor(data$agegroup)
 
+###############################################################
 
 # Graphical Exploration
-
 library(ggplot2)
 
-## bar-chart number of patients with and without disease
-
-plot1 <- ggplot(data, aes(target, fill=target)) + 
+## chart # of patients with and without disease
+plot1 <- ggplot(data, aes(target, fill = target)) + 
   geom_bar() +
-  labs(x="Disease", y="Number of patients") +
-  guides(fill=FALSE)
+  labs(x = "Disease", 
+       y = "Number of patients") +
+  guides(fill = FALSE)
 
-## bar-chart number of patients by age
-
-plot2 <- ggplot(data, aes(age, fill=target)) + 
+## chart # of patients by age
+plot2 <- ggplot(data, aes(age, fill = target)) + 
   geom_histogram(binwidth=1) +
-  labs(fill="Disease", x="Age", y="Number of patients")
+  labs(fill = "Disease", 
+       x = "Age", 
+       y = "Number of patients")
 
-## bar-chart number of patients by sex with or without disease
-
-plot3 <- ggplot(data, aes(sex, fill=target)) + 
+## chart # of patients by sex w/o disease
+plot3 <- ggplot(data, aes(sex, fill = target)) + 
   geom_bar() +
-  labs(fill="Disease", x="Sex", y="Number of patients")
+  labs(fill = "Disease", 
+       x = "Sex", 
+       y = "Number of patients")
 
-## bar-chart number of patients by chest pain with or without disease
-
-plot4 <- ggplot(data, aes(cp, fill=target)) +
+## chart # of patients by chest_pain w/o disease
+plot4 <- ggplot(data, aes(cp, fill = target)) +
   geom_bar() +
-  labs(fill="Disease", x="Chest pain type", y="Number of patients")
+  labs(fill = "Disease", 
+       x = "Chest pain type", 
+       y = "Number of patients")
 
-## bar-chart number of patients by blood pressure with or without disease
+## chart # of patients by blood_pressure w/o disease
+plot5 <- ggplot(data, aes(trestbps, fill = target)) +
+  geom_histogram(binwidth = 3) +
+  labs(fill = "Disease", 
+       x = "Blood pressure (mm Hg)", 
+       y = "Number of patients")
 
-plot5 <- ggplot(data, aes(trestbps, fill=target)) +
-  geom_histogram(binwidth=3) +
-  labs(fill="Disease", x="Blood pressure (mm Hg)", y="Number of patients")
-
-## bar-chart number of patients by sugar level with or without disease
-
-plot6 <- ggplot(data, aes(fbs, fill=target)) +
+## chart # of patients by sugar level w/o disease
+plot6 <- ggplot(data, aes(fbs, fill = target)) +
   geom_bar() +
-  labs(fill="Disease", x="Sugar level > 120 mg/dl", y="Number of patients")
+  labs(fill = "Disease", 
+       x="Sugar level > 120 mg/dl", 
+       y="Number of patients")
 
-## bar-chart number of patients by electrocardiogram with or without disease
-
-plot7 <- ggplot(data, aes(restecg, fill=target)) +
+## chart # of patients by electrocardiogram w/o disease
+plot7 <- ggplot(data, aes(restecg, fill = target)) +
   geom_bar() +
-  labs(fill="Disease", x="Electrocardiogram on rest", y="Number of patients")
+  labs(fill = "Disease", 
+       x = "Electrocardiogram on rest", 
+       y = "Number of patients")
 
-## bar-chart number of patients by heart rate during exercise with or without disease
-
+## chart # of patients by heart_rate exercise w/o disease
 plot8 <- ggplot(data, aes(thalach, fill=target)) +
   geom_histogram(binwidth=10) +
-  labs(fill="Disease", x="Maximum heart rate during exercise", y="Number of patients")
+  labs(fill = "Disease", 
+       x = "Maximum heart rate during exercise", 
+       y = "Number of patients")
 
 ## multiplot
 library(ggpubr)
@@ -226,32 +234,41 @@ ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 +
 
 ### plot factors indicating hearth disease
 
-options(repr.plot.width=14, repr.plot.height=14)
+options(repr.plot.width = 14, repr.plot.height = 14)
 
-c %>% filter(name!="(Intercept)" & name!="predict") %>%  ggplot(aes(reorder(name,odds),odds)) + 
+c %>% filter(name != "(Intercept)" & name != "predict") %>%  
+  ggplot(aes(reorder(name, odds), odds)) + 
   geom_bar(stat = "identity") + 
-  geom_label(aes(label=round(odds,2), size=8)) +
+  geom_label(aes(label=round(odds, 2), size = 8)) +
   coord_flip() +
   theme_fivethirtyeight() +
-  theme(axis.text=element_text(size=12), plot.subtitle = element_text(size=12), plot.caption = element_text(size=12)) +
+  theme(axis.text=element_text(size = 12), 
+        plot.subtitle = element_text(size = 12), 
+        plot.caption = element_text(size = 12)) +
   geom_hline(yintercept = 1, color="red", linetype="dashed") +
   xlab('Age') + 
   ylab('Satisfaction Probability') + 
-  labs(title = 'Factors Affecting Heart Disease (Odds Ratio)', subtitle = "factors with odds ratio grater than 1 indicate heart disease", caption = "**interpretation: a 1 unit increase in 'cp' increases the odds of heart disease by a factor of 2.36**")
+  labs(title = 'Factors Affecting Heart Disease (Odds Ratio)', 
+       subtitle = "factors with odds ratio grater than 1 indicate heart disease", 
+       caption = "**interpretation: a 1 unit increase in 'cp' increases the odds of heart disease by a factor of 2.36**")
 
 ### predict hearth disease probability for chest_pain, ecg and slope
 
 options(repr.plot.width = 10, repr.plot.height = 3)
 
 a <- ggplot(data, aes(cp, target)) + 
-  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) + 
+  stat_smooth(method= "glm", 
+              method.args = list(family = "binomial"), 
+              se=F) + 
   theme_fivethirtyeight() +
   scale_y_continuous(limits=c(0,1)) +
   theme(axis.text=element_text(size=12), plot.subtitle = element_text(size=12), plot.caption = element_text(size=12)) +
   labs(title = 'Effect of CP on Heart Disease (%)', subtitle="x: cp, y: heart disease probability")
 
 b <- ggplot(data, aes(slope, target)) + 
-  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) + 
+  stat_smooth(method="glm", 
+              method.args = list(family = "binomial"), 
+              se=F) + 
   theme_fivethirtyeight() +
   scale_y_continuous(limits=c(0,1)) +
   scale_x_continuous(breaks=seq(0, 2, 1)) +
@@ -259,12 +276,17 @@ b <- ggplot(data, aes(slope, target)) +
   labs(title = 'Effect of Slope on Heart Disease (%)', subtitle="x: slope, y: heart disease probability")
 
 c <- ggplot(data, aes(restecg, target)) + 
-  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) + 
+  stat_smooth(method="glm", 
+              method.args = list(family = "binomial"), 
+              se=F) + 
   theme_fivethirtyeight() +
   scale_y_continuous(limits=c(0,1)) +
   scale_x_continuous(breaks=seq(0, 2, 1)) +
-  theme(axis.text=element_text(size=12), plot.subtitle = element_text(size=12), plot.caption = element_text(size=12)) +
-  labs(title = 'Effect of ECG on Heart Disease (%)', subtitle="x: restecg, y: heart disease probability")
+  theme(axis.text=element_text(size=12), 
+        plot.subtitle = element_text(size=12), 
+        plot.caption = element_text(size=12)) +
+  labs(title = 'Effect of ECG on Heart Disease (%)', 
+       subtitle="x: restecg, y: heart disease probability")
 
 grid.arrange(a, b, c, nrow = 1) #FIXME
 
@@ -324,7 +346,7 @@ fitControl <- trainControl(method = "cv", # cross validation
 
 ## Naive Bayes
 
-## create and train
+### create and train
 
 model.nb <- train(form = hearth_disease ~ ., # formula
                   data = data.train,
