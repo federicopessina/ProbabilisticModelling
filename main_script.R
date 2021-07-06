@@ -169,14 +169,14 @@ data$agegroup <- as.factor(data$agegroup)
 library(ggplot2)
 
 ## chart # of patients with and without disease
-plot1 <- ggplot(data, aes(target, fill = target)) + 
+plot1 <- ggplot(data, aes(data$heart, fill = hearth_disease)) + 
   geom_bar() +
   labs(x = "Disease", 
        y = "Number of patients") +
   guides(fill = FALSE)
 
 ## chart # of patients by age
-plot2 <- ggplot(data, aes(age, fill = target)) + 
+plot2 <- ggplot(data, aes(data$heart, fill = target)) + 
   geom_histogram(binwidth=1) +
   labs(fill = "Disease", 
        x = "Age", 
@@ -226,6 +226,10 @@ plot8 <- ggplot(data, aes(thalach, fill=target)) +
 
 ## multiplot
 library(ggpubr)
+
+plot_list = c(plot1, plot2)
+
+aggregate_plot <- ggarrange(plotlist = plot_list) #FIXME
 
 ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 + 
             rremove("x.text"), 
@@ -291,25 +295,9 @@ c <- ggplot(data, aes(restecg, target)) +
 grid.arrange(a, b, c, nrow = 1) #FIXME
 
 ###############################################################
-library(bnlearn)
-
-bn_data <- as.data.frame(data)
-
-#bn_data_example <- as.data.frame(bn_data[, c("age", "sex", "chest_pain",
-#                                             "blood_pressure", "cholesterol",
-#                                             "blood_sugar", "rest_cardio",
-#                                             "max_cardio", "angina_pain",
-#                                             "ecg_depression", "slope",
-#                                             "num_major_vessels", "thalassemia",
-#                                             "hearth_disease", "agegroup")])
-
-res <- hc(bn_data)
-
-plot(res)
-
-###############################################################
 
 # Train/Test Split
+library(caret)
 
 set.seed(888)
 
@@ -320,13 +308,11 @@ data.train <- data[ training_indeces,]
 data.test  <- data[-training_indeces,]
 
 prop.table(table(data.train$hearth_disease)) * 100 # check balance
-prop.table(table(data.test$hearth_disease)) * 100
+prop.table(table(data.test$hearth_disease)) * 100 # check balance
 
 ###############################################################
 
 # Model
-
-library(caret)
 library(e1071)
 library(corrplot)
 library(tidyverse)
@@ -347,6 +333,15 @@ fitControl <- trainControl(method = "cv", # cross validation
 ## Naive Bayes
 
 ### create and train
+library(bnlearn)
+
+bn_data.train <- as.data.frame(data.train)
+bn_data.test <- as.data.frame(data.test)
+
+
+res <- hc(bn_data.train)
+
+plot(res)
 
 model.nb <- train(form = hearth_disease ~ ., # formula
                   data = data.train,
@@ -358,10 +353,10 @@ model.nb # model infos
 ### evaluate
 
 predict.nb <- predict(model.nb,
-                   newdata = data.test)
+                   newdata = bn_data.test)
 
 confusion_matrix.nb <- 
-  confusionMatrix(predict.nb, data.test$hearth_disease)
+  confusionMatrix(predict.nb, bn_data.test$hearth_disease)
 
 plot(model.nb)      # distribution
 confusion_matrix.nb # results
@@ -370,27 +365,65 @@ confusion_matrix.nb # results
 var_imp.nb <- varImp(model.nb) # variable importance
 plot(var_imp.nb)
 
+confusion_matrix_tab.nb <- table(predict.nb, bn_data.test$hearth_disease)
+accuracy.nb <- sum(diag(confusion_matrix_tab.nb))/sum(confusion_matrix_tab.nb)*100
 ###############################################################
 
 ## Tree-Augmented Naive Bayes 
 
-#FIXME
+explanatory_variables = c('age', 'sex', 'chest_pain', 
+                          'blood_pressure', 'cholesterol',
+                          'blood_sugar', 'rest_cardio',
+                          'max_cardio', 'angina_pain',
+                          'ecg_depression', 'slope',
+                          'num_major_vessels', 'thalassemia',
+                          'agegroup')
 
-model.tan <- train(form = hearth_disease ~ ., 
-                   data = data.train,
-                   method = "tan",
-                   metric = ifelse(is.factor(bn_data$hearth_disease), "Accuracy", "RMSE"),
-                   maximize = ifelse(metric %in% c("RMSE", "logLoss", "MAE"), FALSE, TRUE),
-                   trControl = fitControl,
-                   na.action = na.fail)
+model.tan <- tree.bayes(x = bn_data.train, 
+           training = 'hearth_disease', 
+           explanatory = explanatory_variables, 
+           whitelist = NULL, 
+           blacklist = NULL,
+           mi = 'mi', # alternative: 'mig' # estimator used for the mutual information coefficients
+           root = NULL, 
+           debug = FALSE)
 
 model.tan
 
 plot(model.tan)
 
-library(bnlearn)
+### evaluate
 
-tan = tree.bayes(data.test, "A")
-fitted = bn.fit(tan, learning.test, method = "bayes")
-pred = predict(fitted, learning.test)
-table(pred, learning.test[, "A"])
+predict.tan <- predict(model.tan,
+                       data = bn_data.test)
+
+confusion_matrix.tan <- 
+  confusionMatrix(predict.nb, bn_data.test$hearth_disease)
+
+plot(model.tan)      # distribution
+confusion_matrix.tan # results
+
+confusion_matrix_tab.tan <- table(predict.tan, bn_data.test$hearth_disease)
+accuracy.tan <- sum(diag(confusion_matrix_tab.tan))/sum(confusion_matrix_tab.tan)*100
+
+
+#tan = tree.bayes(data.test, "A")
+#fitted = bn.fit(tan, learning.test, method = "bayes")
+#pred = predict(fitted, learning.test)
+#table(pred, learning.test[, "A"])
+
+###############################################################
+
+# Model Comparison
+
+result_accuracy <- c(accuracy.nb, accuracy.tan)
+result_names <- c("Naive Bayes", "Tree-Augmented Naive Bayes")
+library(data.table)
+result<-data.table(method = result_names,
+                   mcc = result_accuracy)
+library(ggplot2)
+ggplot(result,aes(x = method, y = mcc)) + 
+  geom_bar(stat = "identity") +
+  labs(title = "Results by Accuracy values",
+       y ="Algorithms")+
+  coord_flip()
