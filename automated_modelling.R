@@ -62,15 +62,19 @@ data$hearth_disease <- as.numeric(data$hearth_disease)
 # Discretize the data
 M <- as.data.frame(data)
 
+NUMBER_BREACKS = 5
+
 list_M <- lapply(
   X = c('interval', 'quantile', 'hartemink'),
   FUN = function(method) discretize(
     data = M,
     method = method,
-    breaks = 4,
+    breaks = NUMBER_BREACKS,
     ordered = TRUE
   )
 )
+
+list_M
 
 names(list_M) <- c('interval', 'quantile', 'hartemink')
 
@@ -80,7 +84,11 @@ lapply(X = list_M, FUN = summary)
 
 # Algos
 
-v_algorithms <- c('pc.stable', 'gs', 'iamb', 'fast.iamb')
+v_algorithms <- c('pc.stable', 'gs', 
+                  'iamb', 'fast.iamb', 'inter.iamb', 'iamb.fdr',
+                  'mmpc', 'si.hiton.pc', 'hpc', 'hc', 'mmhc',
+                  'tabu', 'rsmax2', 'h2pc',
+                  'aracne', 'chow.liu')
 
 list_bnlearn <- list()
 
@@ -137,3 +145,4 @@ M_score
 graphviz.plot(
   list_bnlearn[[nrow(M_score)]][[ncol(M_score)]]
 )
+
