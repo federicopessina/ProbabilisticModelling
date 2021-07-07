@@ -406,11 +406,21 @@ confusion_matrix.tan # results
 confusion_matrix_tab.tan <- table(predict.tan, bn_data.test$hearth_disease)
 accuracy.tan <- sum(diag(confusion_matrix_tab.tan))/sum(confusion_matrix_tab.tan)*100
 
-
 #tan = tree.bayes(data.test, "A")
 #fitted = bn.fit(tan, learning.test, method = "bayes")
 #pred = predict(fitted, learning.test)
 #table(pred, learning.test[, "A"])
+
+###############################################################
+
+## Max-Min Hill Climbing (MMHC)
+
+mmhc(x = bn_data.train, # dataframe w variible 
+     whitelist = NULL, 
+     blacklist = NULL, 
+     restrict.args = list(),
+     maximize.args = list(), 
+     debug = FALSE)
 
 ###############################################################
 
