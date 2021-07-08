@@ -31,62 +31,6 @@ setnames(data, "ca", "num_major_vessels")
 setnames(data, "thal", "thalassemia")
 setnames(data, "target", "hearth_disease")
 
-## give a better name to the factor values for the graphs
-levels(data$sex) <- c("Female", "Male")
-levels(data$chest_pain) <- c("Asymptomatic", "Atypical angina", "No angina", "Typical angina")
-levels(data$blood_sugar) <- c("No", "Yes")
-levels(data$rest_cardio) <- c("Hypertrophy", "Normal", "Abnormalities")
-levels(data$angina_pain) <- c("No", "Yes")
-levels(data$slope) <- c("Descending", "Flat", "Ascending")
-levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
-levels(data$hearth_disease) <- c("Yes", "No")
-
-## change continuous variables into cathegorical
-library(dplyr)
-data <- data %>% 
-  mutate(agegroup = case_when(age >= 0  & age <= 40 ~ '0-40',
-                              age > 40  & age <= 50 ~ '41-50',
-                              age > 50  & age <= 60 ~ '51-60',
-                              age > 60  & age <= 70 ~ '61-70',
-                              age > 70 ~ '71-100'))
-
-data <- data %>% 
-  mutate(agegroup = case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
-                              blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
-                              blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
-                              blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
-                              blood_pressure > 160 ~ '161-200'))
-
-data <- data %>% 
-  mutate(agegroup = case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
-                              ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
-                              ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
-                              ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
-                              ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
-                              ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
-                              ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
-                              ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
-                              ecg_depression > 4 ~ '4.00-8.00'))
-
-data <- data %>% 
-  mutate(agegroup = case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
-                              cholesterol > 20  & cholesterol <= 40 ~ '20-40',
-                              cholesterol > 40  & cholesterol <= 60 ~ '40-60',
-                              cholesterol > 60  & cholesterol <= 80 ~ '60-80',
-                              cholesterol > 80  & cholesterol <= 100 ~ '80-100',
-                              cholesterol > 100  & cholesterol <= 120 ~ '100-120',
-                              cholesterol > 120  & cholesterol <= 140 ~ '120-140',
-                              cholesterol > 140 ~ '140-160'))
-
-data <- data %>% 
-  mutate(agegroup = case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
-                              max_cardio > 100  & max_cardio <= 120 ~ '100-120',
-                              max_cardio > 120  & max_cardio <= 140 ~ '120-140',
-                              max_cardio > 140  & max_cardio <= 160 ~ '140-160',
-                              max_cardio > 160  & max_cardio <= 180 ~ '160-180',
-                              max_cardio > 180 ~ '180-220'))
-
-
 
 ## drop the null values
 colSums(is.na(data))
@@ -143,11 +87,6 @@ ggplot(data, aes(data$ecg_depression)) +
   theme_pubclean() +
   labs(title="ECG Depression Distribution")
 
-ggplot(data, aes(data$slope)) +
-  geom_freqpoly(binwidth = 1) +
-  theme_pubclean() +
-  labs(title="Angina Pain Distribution")
-
 ggplot(data, aes(data$num_major_vessels)) +
   geom_bar() +
   theme_pubclean() +
@@ -161,7 +100,7 @@ ggplot(data, aes(data$thalassemia)) +
 ggplot(data, aes(data$hearth_disease)) +
   geom_bar() +
   theme_pubclean() +
-  labs(title="Hearth Disease Distribution"))
+  labs(title="Hearth Disease Distribution")
 
 
 ### variables pairs
@@ -169,26 +108,8 @@ library(GGally)
 ggpairs(data,
         title = "Pairs Graph")
 
+## give a better name to the factor values for the graphs
 
-
-## trasform into numeric
-
-data$age <- as.numeric(data$age)
-data$sex <- as.numeric(data$sex)
-data$chest_pain <- as.numeric(data$chest_pain)
-data$blood_pressure <- as.numeric(data$blood_pressure)
-data$cholesterol <- as.numeric(data$cholesterol)
-data$blood_sugar <- as.numeric(data$blood_sugar)
-data$rest_cardio <- as.numeric(data$rest_cardio)
-data$max_cardio <- as.numeric(data$max_cardio)
-data$angina_pain <- as.numeric(data$angina_pain)
-data$ecg_depression <- as.numeric(data$ecg_depression)
-data$slope <- as.numeric(data$slope)
-data$num_major_vessels <- as.numeric(data$num_major_vessels)
-data$thalassemia <- as.numeric(data$thalassemia)
-data$hearth_disease <- as.numeric(data$hearth_disease)
-
-## transform categorical variable to R factors
 data$sex <- as.factor(data$sex)
 data$chest_pain <- as.factor(data$chest_pain)
 data$blood_sugar <- as.factor(data$blood_sugar)
@@ -198,146 +119,89 @@ data$slope <- as.factor(data$slope)
 data$thalassemia <- as.factor(data$thalassemia)
 data$hearth_disease <- as.factor(data$hearth_disease)
 
-data$age <- as.factor(data$age)
+levels(data$sex) <- c("Female", "Male")
+levels(data$chest_pain) <- c("Asymptomatic", "Atypical angina", "No angina", "Typical angina")
+levels(data$blood_sugar) <- c("No", "Yes")
+levels(data$rest_cardio) <- c("Hypertrophy", "Normal", "Abnormalities")
+levels(data$angina_pain) <- c("No", "Yes")
+levels(data$slope) <- c("Descending", "Flat", "Ascending")
+levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
+levels(data$hearth_disease) <- c("Yes", "No")
+
+## change continuous variables into cathegorical
+library(dplyr)
+data <- data %>% 
+  mutate(age = case_when(age >= 0  & age <= 40 ~ '0-40',
+                              age > 40  & age <= 50 ~ '41-50',
+                              age > 50  & age <= 60 ~ '51-60',
+                              age > 60  & age <= 70 ~ '61-70',
+                              age > 70 ~ '71-100'))
+
+data <- data %>% 
+  mutate(blood_pressure = case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
+                              blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
+                              blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
+                              blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
+                              blood_pressure > 160 ~ '161-200'))
+
+data <- data %>% 
+  mutate(ecg_depression = case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
+                              ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
+                              ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
+                              ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
+                              ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
+                              ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
+                              ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
+                              ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
+                              ecg_depression > 4 ~ '4.00-8.00'))
+
+data <- data %>% 
+  mutate(cholesterol = case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
+                              cholesterol > 20  & cholesterol <= 40 ~ '20-40',
+                              cholesterol > 40  & cholesterol <= 60 ~ '40-60',
+                              cholesterol > 60  & cholesterol <= 80 ~ '60-80',
+                              cholesterol > 80  & cholesterol <= 100 ~ '80-100',
+                              cholesterol > 100  & cholesterol <= 120 ~ '100-120',
+                              cholesterol > 120  & cholesterol <= 140 ~ '120-140',
+                              cholesterol > 140 ~ '140-160'))
+
+data <- data %>% 
+  mutate(max_cardio = case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
+                              max_cardio > 100  & max_cardio <= 120 ~ '100-120',
+                              max_cardio > 120  & max_cardio <= 140 ~ '120-140',
+                              max_cardio > 140  & max_cardio <= 160 ~ '140-160',
+                              max_cardio > 160  & max_cardio <= 180 ~ '160-180',
+                              max_cardio > 180 ~ '180-220'))
+
+## trasform into numeric
+
+#data$age <- as.numeric(data$age)
+#data$sex <- as.numeric(data$sex)
+#data$chest_pain <- as.numeric(data$chest_pain)
+#data$blood_pressure <- as.numeric(data$blood_pressure)
+#data$cholesterol <- as.numeric(data$cholesterol)
+#data$blood_sugar <- as.numeric(data$blood_sugar)
+#data$rest_cardio <- as.numeric(data$rest_cardio)
+#data$max_cardio <- as.numeric(data$max_cardio)
+#data$angina_pain <- as.numeric(data$angina_pain)
+#data$ecg_depression <- as.numeric(data$ecg_depression)
+#data$slope <- as.numeric(data$slope)
+#data$num_major_vessels <- as.numeric(data$num_major_vessels)
+#data$thalassemia <- as.numeric(data$thalassemia)
+#data$hearth_disease <- as.numeric(data$hearth_disease)
+
+## transform categorical variable to R factors
+
+data$age <- as.factor(data$age) #HERE
 data$blood_pressure <- as.factor(data$blood_pressure)
 data$ecg_depression <- as.factor(data$ecg_depression)
 data$cholesterol <- as.factor(data$cholesterol)
 data$max_cardio <- as.factor(data$max_cardio)
 data$num_major_vessels <- as.factor(data$num_major_vessels)
-data$agegroup <- as.factor(data$agegroup)
+
 
 ###############################################################
 
-# Graphical Exploration
-library(ggplot2)
-
-## chart # of patients with and without disease
-plot1 <- ggplot(data, aes(data$heart, fill = hearth_disease)) + 
-  geom_bar() +
-  labs(x = "Disease", 
-       y = "Number of patients") +
-  guides(fill = FALSE)
-
-## chart # of patients by age
-plot2 <- ggplot(data, aes(data$heart, fill = target)) + 
-  geom_histogram(binwidth=1) +
-  labs(fill = "Disease", 
-       x = "Age", 
-       y = "Number of patients")
-
-## chart # of patients by sex w/o disease
-plot3 <- ggplot(data, aes(sex, fill = target)) + 
-  geom_bar() +
-  labs(fill = "Disease", 
-       x = "Sex", 
-       y = "Number of patients")
-
-## chart # of patients by chest_pain w/o disease
-plot4 <- ggplot(data, aes(cp, fill = target)) +
-  geom_bar() +
-  labs(fill = "Disease", 
-       x = "Chest pain type", 
-       y = "Number of patients")
-
-## chart # of patients by blood_pressure w/o disease
-plot5 <- ggplot(data, aes(trestbps, fill = target)) +
-  geom_histogram(binwidth = 3) +
-  labs(fill = "Disease", 
-       x = "Blood pressure (mm Hg)", 
-       y = "Number of patients")
-
-## chart # of patients by sugar level w/o disease
-plot6 <- ggplot(data, aes(fbs, fill = target)) +
-  geom_bar() +
-  labs(fill = "Disease", 
-       x="Sugar level > 120 mg/dl", 
-       y="Number of patients")
-
-## chart # of patients by electrocardiogram w/o disease
-plot7 <- ggplot(data, aes(restecg, fill = target)) +
-  geom_bar() +
-  labs(fill = "Disease", 
-       x = "Electrocardiogram on rest", 
-       y = "Number of patients")
-
-## chart # of patients by heart_rate exercise w/o disease
-plot8 <- ggplot(data, aes(thalach, fill=target)) +
-  geom_histogram(binwidth=10) +
-  labs(fill = "Disease", 
-       x = "Maximum heart rate during exercise", 
-       y = "Number of patients")
-
-## multiplot
-library(ggpubr)
-
-plot_list = c(plot1, plot2)
-
-aggregate_plot <- ggarrange(plotlist = plot_list) #FIXME
-
-ggarrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8 + 
-            rremove("x.text"), 
-            #labels = c("A", "B"),
-            ncol = 2, nrow = 4) #FIXME
-
-### plot factors indicating hearth disease
-
-options(repr.plot.width = 14, repr.plot.height = 14)
-
-c %>% filter(name != "(Intercept)" & name != "predict") %>%  
-  ggplot(aes(reorder(name, odds), odds)) + 
-  geom_bar(stat = "identity") + 
-  geom_label(aes(label=round(odds, 2), size = 8)) +
-  coord_flip() +
-  theme_fivethirtyeight() +
-  theme(axis.text=element_text(size = 12), 
-        plot.subtitle = element_text(size = 12), 
-        plot.caption = element_text(size = 12)) +
-  geom_hline(yintercept = 1, color="red", linetype="dashed") +
-  xlab('Age') + 
-  ylab('Satisfaction Probability') + 
-  labs(title = 'Factors Affecting Heart Disease (Odds Ratio)', 
-       subtitle = "factors with odds ratio grater than 1 indicate heart disease", 
-       caption = "**interpretation: a 1 unit increase in 'cp' increases the odds of heart disease by a factor of 2.36**")
-
-### predict hearth disease probability for chest_pain, ecg and slope
-
-options(repr.plot.width = 10, repr.plot.height = 3)
-
-a <- ggplot(data, aes(cp, target)) + 
-  stat_smooth(method= "glm", 
-              method.args = list(family = "binomial"), 
-              se=F) + 
-  theme_fivethirtyeight() +
-  scale_y_continuous(limits=c(0,1)) +
-  theme(axis.text=element_text(size=12), plot.subtitle = element_text(size=12), plot.caption = element_text(size=12)) +
-  labs(title = 'Effect of CP on Heart Disease (%)', subtitle="x: cp, y: heart disease probability")
-
-b <- ggplot(data, aes(slope, target)) + 
-  stat_smooth(method="glm", 
-              method.args = list(family = "binomial"), 
-              se=F) + 
-  theme_fivethirtyeight() +
-  scale_y_continuous(limits=c(0,1)) +
-  scale_x_continuous(breaks=seq(0, 2, 1)) +
-  theme(axis.text=element_text(size=12), plot.subtitle = element_text(size=12), plot.caption = element_text(size=12)) +
-  labs(title = 'Effect of Slope on Heart Disease (%)', subtitle="x: slope, y: heart disease probability")
-
-c <- ggplot(data, aes(restecg, target)) + 
-  stat_smooth(method="glm", 
-              method.args = list(family = "binomial"), 
-              se=F) + 
-  theme_fivethirtyeight() +
-  scale_y_continuous(limits=c(0,1)) +
-  scale_x_continuous(breaks=seq(0, 2, 1)) +
-  theme(axis.text=element_text(size=12), 
-        plot.subtitle = element_text(size=12), 
-        plot.caption = element_text(size=12)) +
-  labs(title = 'Effect of ECG on Heart Disease (%)', 
-       subtitle="x: restecg, y: heart disease probability")
-
-grid.arrange(a, b, c, nrow = 1) #FIXME
-
-###############################################################
 
 # Train/Test Split
 library(caret)
@@ -364,6 +228,7 @@ bn_data.test <- as.data.frame(data.test)
 res <- hc(bn_data.train)
 
 plot(res)
+
 ###############################################################
 
 # Model
@@ -386,9 +251,8 @@ fitControl <- trainControl(method = "cv", # cross validation
 
 ## Naive Bayes
 
-
 model.nb <- train(form = hearth_disease ~ ., # formula
-                  data = data.train,
+                  data = bn_data.train,
                   method = "naive_bayes",
                   trControl = fitControl) # 10 cv
 
@@ -468,7 +332,7 @@ mmhc(x = bn_data.train, # dataframe w variible
 model.aracne <- aracne(x = bn_data.train, 
                        whitelist = NULL, 
                        blacklist = NULL, 
-                       mi = NULL, 
+                       mi = 'mi', 
                        debug = FALSE)
 
 plot(model.aracne)
