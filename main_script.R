@@ -3,6 +3,8 @@
 # Import dataset
 
 data <- read.csv('heart.csv')
+
+data <- as.data.frame(data)
 head(data)
 
 ###############################################################
@@ -31,7 +33,6 @@ setnames(data, "ca", "num_major_vessels")
 setnames(data, "thal", "thalassemia")
 setnames(data, "target", "hearth_disease")
 
-
 ## drop the null values
 colSums(is.na(data))
 library(Amelia)
@@ -43,6 +44,21 @@ missing_thal_indeces <-which(data$thalassemia %in% 0)
 missing_values_indeces <- c(missing_num_major_vessels_indeces, missing_thal_indeces)
 data <- data[-missing_values_indeces, ]
 
+
+
+###############################################################
+
+data.numeric <- data[, c('age', 'blood_pressure', 'cholesterol',
+                         'max_cardio', 'ecg_depression')]
+
+data.numeric$age <- as.numeric(data$age)
+data.numeric$blood_pressure <- as.numeric(data$blood_pressure)
+data.numeric$cholesterol <- as.numeric(data$cholesterol)
+data.numeric$max_cardio <- as.numeric(data$max_cardio)
+data.numeric$ecg_depression <- as.numeric(data$ecg_depression)
+
+
+###############################################################
 
 ## transform numerical variables in categorical variable
 library(ggpubr) # take a look at the distribution
@@ -131,64 +147,52 @@ levels(data$hearth_disease) <- c("Yes", "No")
 ## change continuous variables into cathegorical
 library(dplyr)
 data <- data %>% 
-  mutate(age = case_when(age >= 0  & age <= 40 ~ '0-40',
-                              age > 40  & age <= 50 ~ '41-50',
-                              age > 50  & age <= 60 ~ '51-60',
-                              age > 60  & age <= 70 ~ '61-70',
-                              age > 70 ~ '71-100'))
+  mutate(age = 
+           case_when(age >= 0  & age <= 40 ~ '0-40',
+                     age > 40  & age <= 50 ~ '41-50',
+                     age > 50  & age <= 60 ~ '51-60',
+                     age > 60  & age <= 70 ~ '61-70',
+                     age > 70 ~ '71-100'))
 
 data <- data %>% 
-  mutate(blood_pressure = case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
-                              blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
-                              blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
-                              blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
-                              blood_pressure > 160 ~ '161-200'))
+  mutate(blood_pressure = 
+           case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
+                     blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
+                     blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
+                     blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
+                     blood_pressure > 160 ~ '161-200'))
 
 data <- data %>% 
-  mutate(ecg_depression = case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
-                              ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
-                              ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
-                              ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
-                              ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
-                              ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
-                              ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
-                              ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
-                              ecg_depression > 4 ~ '4.00-8.00'))
+  mutate(ecg_depression = 
+           case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
+                     ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
+                     ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
+                     ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
+                     ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
+                     ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
+                     ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
+                     ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
+                     ecg_depression > 4 ~ '4.00-8.00'))
 
 data <- data %>% 
-  mutate(cholesterol = case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
-                              cholesterol > 20  & cholesterol <= 40 ~ '20-40',
-                              cholesterol > 40  & cholesterol <= 60 ~ '40-60',
-                              cholesterol > 60  & cholesterol <= 80 ~ '60-80',
-                              cholesterol > 80  & cholesterol <= 100 ~ '80-100',
-                              cholesterol > 100  & cholesterol <= 120 ~ '100-120',
-                              cholesterol > 120  & cholesterol <= 140 ~ '120-140',
-                              cholesterol > 140 ~ '140-160'))
+  mutate(cholesterol = 
+           case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
+                     cholesterol > 20  & cholesterol <= 40 ~ '20-40',
+                     cholesterol > 40  & cholesterol <= 60 ~ '40-60',
+                     cholesterol > 60  & cholesterol <= 80 ~ '60-80',
+                     cholesterol > 80  & cholesterol <= 100 ~ '80-100',
+                     cholesterol > 100  & cholesterol <= 120 ~ '100-120',
+                     cholesterol > 120  & cholesterol <= 140 ~ '120-140',
+                     cholesterol > 140 ~ '140-160'))
 
 data <- data %>% 
-  mutate(max_cardio = case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
-                              max_cardio > 100  & max_cardio <= 120 ~ '100-120',
-                              max_cardio > 120  & max_cardio <= 140 ~ '120-140',
-                              max_cardio > 140  & max_cardio <= 160 ~ '140-160',
-                              max_cardio > 160  & max_cardio <= 180 ~ '160-180',
-                              max_cardio > 180 ~ '180-220'))
-
-## trasform into numeric
-
-#data$age <- as.numeric(data$age)
-#data$sex <- as.numeric(data$sex)
-#data$chest_pain <- as.numeric(data$chest_pain)
-#data$blood_pressure <- as.numeric(data$blood_pressure)
-#data$cholesterol <- as.numeric(data$cholesterol)
-#data$blood_sugar <- as.numeric(data$blood_sugar)
-#data$rest_cardio <- as.numeric(data$rest_cardio)
-#data$max_cardio <- as.numeric(data$max_cardio)
-#data$angina_pain <- as.numeric(data$angina_pain)
-#data$ecg_depression <- as.numeric(data$ecg_depression)
-#data$slope <- as.numeric(data$slope)
-#data$num_major_vessels <- as.numeric(data$num_major_vessels)
-#data$thalassemia <- as.numeric(data$thalassemia)
-#data$hearth_disease <- as.numeric(data$hearth_disease)
+  mutate(max_cardio = 
+           case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
+                     max_cardio > 100  & max_cardio <= 120 ~ '100-120',
+                    max_cardio > 120  & max_cardio <= 140 ~ '120-140',
+                    max_cardio > 140  & max_cardio <= 160 ~ '140-160',
+                    max_cardio > 160  & max_cardio <= 180 ~ '160-180',
+                    max_cardio > 180 ~ '180-220'))
 
 ## transform categorical variable to R factors
 
@@ -203,6 +207,198 @@ data$num_major_vessels <- as.factor(data$num_major_vessels)
 ###############################################################
 
 
+dag <- hc(bn_data.train, debug = TRUE)
+dag # infos bayesian network
+plot(dag)
+
+
+par(mfrow = c(2, 3), mar = c(4, 2, 2, 2))
+
+# TODO change to numeric the variables to plot them
+for (var in c('age', 'sex', 'chest_pain', 
+              'blood_pressure', 'cholesterol',
+              'blood_sugar', 'rest_cardio',
+              'max_cardio', 'angina_pain',
+              'ecg_depression', 'slope',
+              'num_major_vessels', 'thalassemia',
+              'agegroup')) {
+  x = data[, var]
+  hist(x, prob = TRUE, xlab = var, ylab = "", main = "", col = "ivory")
+  lines(density(x), lwd = 2, col = "tomato")
+  curve(dnorm(x, mean = mean(x), sd = sd(x)), from = min(x), to = max(x),
+  add = TRUE, lwd = 2, col = "steelblue")
+}
+
+# use best variables
+pairs(data.numeric[, setdiff(names(data.numeric), y = c('blood_pressure'))], # except
+      upper.panel = function(x, y, ...) {
+        points(x = x, y = y, col = "grey")
+        abline(coef(lm(y ~ x)), col = "tomato", lwd = 2)
+        },
+      lower.panel = function(x, y, ...) {
+        par(usr = c(0, 1, 0, 1))
+        text(x = 0.5, y = 0.5, round(cor(x, y), 2), cex = 2)
+        }
+      )
+
+
+
+library(gplots)
+#diff.delta = sapply(diff[, 1:6], function(x) x / diff$dT)
+rho = cor(data.frame(data.numeric))
+palette.breaks = seq(0, 1, 0.1)
+par(oma = c(2, 2, 2, 1))
+heatmap.2(rho, scale = "none", trace = "none", revC = TRUE, breaks = palette.breaks)
+
+
+ug = empty.graph(colnames(rho))
+amat(ug) = (rho > 0.4) + 0L - diag(1L, nrow(rho))
+graphviz.plot(ug, layout = "fdp", shape = "ellipse")
+
+
+# blacklist
+bl = tiers2blacklist(list("ecg_depression",
+                          c('max_cardio')))
+bl = rbind(bl, c("ecg_depression", "max_cardio"))
+bl
+
+# whitelist
+wl = matrix(c("cholesterol", "blood_pressure"),
+            ncol = 2, 
+            byrow = TRUE, 
+            dimnames = list(NULL, c("from", "to")))
+wl
+
+
+
+dag = hc(data.numeric, 
+         whitelist = wl, 
+         blacklist = bl,
+         debug = TRUE)
+dag
+
+graphviz.plot(dag, shape = "ellipse", highlight = list(arcs = wl))
+
+str.diff = boot.strength(data.numeric, 
+                         R = 200, 
+                         algorithm = "hc",
+                         algorithm.args = list(whitelist = wl, 
+                                               blacklist = bl)
+                         )
+head(str.diff)
+
+
+attr(str.diff, "threshold")
+
+avg.diff = averaged.network(str.diff)
+
+strength.plot(avg.diff, 
+              str.diff, 
+              shape = "ellipse", 
+              highlight = list(arcs = wl)
+              )
+
+
+
+par(mfrow = c(1, 2))
+graphviz.compare(avg.diff, 
+                 dag, 
+                 shape = "ellipse", 
+                 main = c("averaged DAG", "single DAG")
+                 )
+
+compare(avg.diff, dag)
+
+compare(avg.diff, dag, arcs = TRUE)
+
+
+undirected.arcs(cpdag(dag, wlbl = TRUE))
+
+avg.diff$learning$whitelist = wl
+avg.diff$learning$blacklist = bl
+undirected.arcs(cpdag(avg.diff, wlbl = TRUE))
+
+compare(cpdag(avg.diff, wlbl = TRUE), cpdag(dag, wlbl = TRUE))
+
+plot(str.diff)
+abline(v = 0.75, col = "tomato", lty = 2, lwd = 2)
+abline(v = 0.85, col = "steelblue", lty = 2, lwd = 2)
+
+nrow(str.diff[str.diff$strength > attr(str.diff, "threshold") &
+                str.diff$direction > 0.5, ])
+
+nrow(str.diff[str.diff$strength > 0.75 & str.diff$direction > 0.5, ])
+
+nrow(str.diff[str.diff$strength > 0.85 & str.diff$direction > 0.5, ])
+
+
+avg.simpler = averaged.network(str.diff, threshold = 0.85)
+
+strength.plot(avg.simpler, 
+              str.diff, 
+              shape = "ellipse", 
+              highlight = list(arcs = wl))
+
+fitted.simpler = bn.fit(avg.simpler, data.numeric)
+fitted.simpler
+
+fitted.simpler$age # parameter example
+
+summary(lm(max_cardio ~ cholesterol + blood_pressure, data = data.numeric))
+
+
+
+
+
+library(MASS)
+# maybe not useful
+
+
+
+
+
+# model validation
+
+xval = bn.cv(data.numeric, bn = "hc", 
+             algorithm.args = list(blacklist = bl, 
+                                   whitelist = wl),
+             loss = "cor-lw", 
+             loss.args = list(target = "age", 
+                              n = 200), 
+             runs = 10)
+
+err = numeric(10)
+
+for (i in 1:10) {
+  tt = table(unlist(sapply(xval[[i]], '[[', "observed")),
+             unlist(sapply(xval[[i]], '[[', "predicted")) > 0.50)
+  err[i] = (sum(tt) - sum(diag(tt))) / sum(tt)
+}
+
+summary(err)
+
+
+predcor = structure(numeric(2),
+                    names = c("age", "cholesterol"))
+
+
+
+for (var in names(predcor)) {
+  xval = bn.cv(data.numeric, bn = "hc", 
+               algorithm.args = list(blacklist = bl, 
+                                     whitelist = wl),
+               loss = "cor-lw", 
+               loss.args = list(target = var, 
+                                n = 200), 
+               runs = 10)
+  predcor[var] = mean(sapply(xval, function(x) attr(x, "mean")))
+}
+
+round(predcor, digits = 3)
+
+
+mean(predcor)
+###############################################################
 # Train/Test Split
 library(caret)
 
@@ -220,18 +416,6 @@ prop.table(table(data.test$hearth_disease)) * 100 # check balance
 
 ## create and train
 library(bnlearn)
-
-bn_data.train <- as.data.frame(data.train)
-bn_data.test <- as.data.frame(data.test)
-
-
-res <- hc(bn_data.train)
-
-plot(res)
-
-###############################################################
-
-# Model
 library(e1071)
 library(corrplot)
 library(tidyverse)
@@ -239,6 +423,21 @@ library(psych)
 library(reshape2)
 library(ggthemes)
 library(gridExtra)
+
+str(data)
+
+bn_data.train <- as.data.frame(data.train)
+bn_data.test <- as.data.frame(data.test)
+
+fitted = bn.fit(dag, data = data)
+
+graphviz.plot(dag, shape = "ellipse") # , highlight = list(arcs = wl
+
+newdata = data.frame(hearth_disease = factor('Yes', levels = hearth_disease.lv))
+
+predict(data, 
+        node = "heart_disease", 
+        data = bn_data.train)
 
 ###############################################################
 
@@ -335,7 +534,12 @@ model.aracne <- aracne(x = bn_data.train,
                        mi = 'mi', 
                        debug = FALSE)
 
+model.aracne # model infos
+
 plot(model.aracne)
+
+predict.aracne <- predict(model.aracne,
+                      newdata = bn_data.test)
 
 ### evaluate
 
