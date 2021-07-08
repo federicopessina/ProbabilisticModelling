@@ -103,47 +103,90 @@ data <- data[-missing_values_indeces, ]
 ## transform numerical variables in categorical variable
 library(ggpubr) # take a look at the distribution
 
-ggplot(data, aes(data$age)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$blood_pressure)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$ecg_depression)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$cholesterol)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$max_cardio)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$num_major_vessels)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
-ggplot(data, aes(data$agegroup)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-
 ggplot(data, aes(age, colour = hearth_disease)) +
   geom_freqpoly(binwidth = 1) + 
-  labs(title="Age Distribution by Outcome")
+  labs(title="Age Distribution")
 
-ggplot(data, aes(x = age, fill = hearth_disease, 
-                 color = hearth_disease)) +
-  geom_histogram(binwidth = 1) + 
-  labs(title = "Age Distribution by Outcome")
-  c + theme_bw()
+ggplot(data, aes(data$sex)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Sex Distribution")
 
+ggplot(data, aes(data$chest_pain)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Chest Pain Distribution")
+
+ggplot(data, aes(data$blood_pressure)) +
+  geom_freqpoly(binwidth = 1) +
+  theme_pubclean() +
+  labs(title="Blood Pressure Distribution")
+
+ggplot(data, aes(data$rest_cardio)) +
+  geom_freqpoly(binwidth = 1) +
+  theme_pubclean() +
+  labs(title="Rest Cardio Distribution")
+
+ggplot(data, aes(data$max_cardio)) +
+  geom_freqpoly(binwidth = 1) +
+  theme_pubclean() +
+  labs(title="Max Cardio Distribution")
+
+ggplot(data, aes(data$angina_pain)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Angina Pain Distribution")
+
+
+ggplot(data, aes(data$ecg_depression)) +
+  geom_freqpoly(binwidth = 1) +
+  theme_pubclean() +
+  labs(title="ECG Depression Distribution")
+
+ggplot(data, aes(data$slope)) +
+  geom_freqpoly(binwidth = 1) +
+  theme_pubclean() +
+  labs(title="Angina Pain Distribution")
+
+ggplot(data, aes(data$num_major_vessels)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Vessel Distribution")
+
+ggplot(data, aes(data$thalassemia)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Thalassemia Distribution")
+
+ggplot(data, aes(data$hearth_disease)) +
+  geom_bar() +
+  theme_pubclean() +
+  labs(title="Hearth Disease Distribution"))
+
+
+### variables pairs
 library(GGally)
 ggpairs(data,
         title = "Pairs Graph")
+
+
+
+## trasform into numeric
+
+data$age <- as.numeric(data$age)
+data$sex <- as.numeric(data$sex)
+data$chest_pain <- as.numeric(data$chest_pain)
+data$blood_pressure <- as.numeric(data$blood_pressure)
+data$cholesterol <- as.numeric(data$cholesterol)
+data$blood_sugar <- as.numeric(data$blood_sugar)
+data$rest_cardio <- as.numeric(data$rest_cardio)
+data$max_cardio <- as.numeric(data$max_cardio)
+data$angina_pain <- as.numeric(data$angina_pain)
+data$ecg_depression <- as.numeric(data$ecg_depression)
+data$slope <- as.numeric(data$slope)
+data$num_major_vessels <- as.numeric(data$num_major_vessels)
+data$thalassemia <- as.numeric(data$thalassemia)
+data$hearth_disease <- as.numeric(data$hearth_disease)
 
 ## transform categorical variable to R factors
 data$sex <- as.factor(data$sex)
@@ -310,6 +353,17 @@ data.test  <- data[-training_indeces,]
 prop.table(table(data.train$hearth_disease)) * 100 # check balance
 prop.table(table(data.test$hearth_disease)) * 100 # check balance
 
+
+## create and train
+library(bnlearn)
+
+bn_data.train <- as.data.frame(data.train)
+bn_data.test <- as.data.frame(data.test)
+
+
+res <- hc(bn_data.train)
+
+plot(res)
 ###############################################################
 
 # Model
@@ -332,16 +386,6 @@ fitControl <- trainControl(method = "cv", # cross validation
 
 ## Naive Bayes
 
-### create and train
-library(bnlearn)
-
-bn_data.train <- as.data.frame(data.train)
-bn_data.test <- as.data.frame(data.test)
-
-
-res <- hc(bn_data.train)
-
-plot(res)
 
 model.nb <- train(form = hearth_disease ~ ., # formula
                   data = data.train,
@@ -406,11 +450,6 @@ confusion_matrix.tan # results
 confusion_matrix_tab.tan <- table(predict.tan, bn_data.test$hearth_disease)
 accuracy.tan <- sum(diag(confusion_matrix_tab.tan))/sum(confusion_matrix_tab.tan)*100
 
-#tan = tree.bayes(data.test, "A")
-#fitted = bn.fit(tan, learning.test, method = "bayes")
-#pred = predict(fitted, learning.test)
-#table(pred, learning.test[, "A"])
-
 ###############################################################
 
 ## Max-Min Hill Climbing (MMHC)
@@ -422,6 +461,25 @@ mmhc(x = bn_data.train, # dataframe w variible
      maximize.args = list(), 
      debug = FALSE)
 
+###############################################################
+
+## Aracne
+
+model.aracne <- aracne(x = bn_data.train, 
+                       whitelist = NULL, 
+                       blacklist = NULL, 
+                       mi = NULL, 
+                       debug = FALSE)
+
+plot(model.aracne)
+
+### evaluate
+
+predict.tan <- predict(model.aracne,
+                       data = bn_data.test)
+
+confusion_matrix.aracne <- 
+  confusionMatrix(predict.tan, bn_data.test$hearth_disease)
 ###############################################################
 
 # Model Comparison
