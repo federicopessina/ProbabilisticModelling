@@ -145,4 +145,3 @@ M_score
 graphviz.plot(
   list_bnlearn[[nrow(M_score)]][[ncol(M_score)]]
 )
-
