@@ -5,18 +5,6 @@
 data <- read.csv('heart.csv')
 
 data <- as.data.frame(data)
-head(data)
-
-###############################################################
-
-#Pre-Processing
-
-## general summary
-dim(data)
-summary(data)
-
-library(psych)
-describe(data)
 
 ## rename variable mispelled
 library(data.table)
@@ -33,6 +21,17 @@ setnames(data, "ca", "num_major_vessels")
 setnames(data, "thal", "thalassemia")
 setnames(data, "target", "hearth_disease")
 
+###############################################################
+
+#Pre-Processing
+
+## general summary
+dim(data)
+summary(data)
+
+library(psych)
+describe(data)
+
 ## drop the null values
 colSums(is.na(data))
 library(Amelia)
@@ -43,8 +42,6 @@ missing_num_major_vessels_indeces <- which(data$num_major_vessels %in% 4)
 missing_thal_indeces <-which(data$thalassemia %in% 0)
 missing_values_indeces <- c(missing_num_major_vessels_indeces, missing_thal_indeces)
 data <- data[-missing_values_indeces, ]
-
-
 
 ###############################################################
 
@@ -57,6 +54,11 @@ data.numeric$cholesterol <- as.numeric(data$cholesterol)
 data.numeric$max_cardio <- as.numeric(data$max_cardio)
 data.numeric$ecg_depression <- as.numeric(data$ecg_depression)
 
+
+data.cathegorical <- data[, c('sex', 'chest_pain', 'blood_sugar',
+                         'rest_cardio', 'angina_pain', 'slope',
+                         'num_major_vessels', 'thalassemia',
+                         'hearth_disease')]
 
 ###############################################################
 
@@ -124,6 +126,8 @@ library(GGally)
 ggpairs(data,
         title = "Pairs Graph")
 
+###############################################################
+
 ## give a better name to the factor values for the graphs
 
 data$sex <- as.factor(data$sex)
@@ -144,70 +148,23 @@ levels(data$slope) <- c("Descending", "Flat", "Ascending")
 levels(data$thalassemia) <- c("Fixed defect", "Normal flow", "Reversible defect")
 levels(data$hearth_disease) <- c("Yes", "No")
 
-## change continuous variables into cathegorical
-library(dplyr)
-data <- data %>% 
-  mutate(age = 
-           case_when(age >= 0  & age <= 40 ~ '0-40',
-                     age > 40  & age <= 50 ~ '41-50',
-                     age > 50  & age <= 60 ~ '51-60',
-                     age > 60  & age <= 70 ~ '61-70',
-                     age > 70 ~ '71-100'))
-
-data <- data %>% 
-  mutate(blood_pressure = 
-           case_when(blood_pressure >= 0  & blood_pressure <= 100 ~ '0-100',
-                     blood_pressure > 100  & blood_pressure <= 120 ~ '101-120',
-                     blood_pressure > 120  & blood_pressure <= 140 ~ '121-140',
-                     blood_pressure > 140  & blood_pressure <= 160 ~ '141-160',
-                     blood_pressure > 160 ~ '161-200'))
-
-data <- data %>% 
-  mutate(ecg_depression = 
-           case_when(ecg_depression >= 0  & ecg_depression <= 0.5 ~ '0.00-0.50',
-                     ecg_depression > 0.5  & ecg_depression <= 1 ~ '0.51-1.00',
-                     ecg_depression > 1.0  & ecg_depression <= 1.5 ~ '1.01-1.50',
-                     ecg_depression > 1.5  & ecg_depression <= 2 ~ '1.51-2.00',
-                     ecg_depression > 2  & ecg_depression <= 2.5 ~ '2.01-2.50',
-                     ecg_depression > 2.5  & ecg_depression <= 3 ~ '2.51-3.00',
-                     ecg_depression > 3  & ecg_depression <= 3.5 ~ '3.00-3.50',
-                     ecg_depression > 3.5  & ecg_depression <= 4 ~ '3.50-4.00',
-                     ecg_depression > 4 ~ '4.00-8.00'))
-
-data <- data %>% 
-  mutate(cholesterol = 
-           case_when(cholesterol >= 0  & cholesterol <= 20 ~ '0-20',
-                     cholesterol > 20  & cholesterol <= 40 ~ '20-40',
-                     cholesterol > 40  & cholesterol <= 60 ~ '40-60',
-                     cholesterol > 60  & cholesterol <= 80 ~ '60-80',
-                     cholesterol > 80  & cholesterol <= 100 ~ '80-100',
-                     cholesterol > 100  & cholesterol <= 120 ~ '100-120',
-                     cholesterol > 120  & cholesterol <= 140 ~ '120-140',
-                     cholesterol > 140 ~ '140-160'))
-
-data <- data %>% 
-  mutate(max_cardio = 
-           case_when(max_cardio >= 0  & max_cardio <= 100 ~ '0-100',
-                     max_cardio > 100  & max_cardio <= 120 ~ '100-120',
-                    max_cardio > 120  & max_cardio <= 140 ~ '120-140',
-                    max_cardio > 140  & max_cardio <= 160 ~ '140-160',
-                    max_cardio > 160  & max_cardio <= 180 ~ '160-180',
-                    max_cardio > 180 ~ '180-220'))
+###############################################################
 
 ## transform categorical variable to R factors
 
 data$age <- as.factor(data$age) #HERE
 data$blood_pressure <- as.factor(data$blood_pressure)
+
+
 data$ecg_depression <- as.factor(data$ecg_depression)
 data$cholesterol <- as.factor(data$cholesterol)
 data$max_cardio <- as.factor(data$max_cardio)
 data$num_major_vessels <- as.factor(data$num_major_vessels)
 
-
 ###############################################################
 
 
-dag <- hc(bn_data.train, debug = TRUE)
+dag <- hc(data.train, debug = TRUE)
 dag # infos bayesian network
 plot(dag)
 
@@ -258,16 +215,17 @@ graphviz.plot(ug, layout = "fdp", shape = "ellipse")
 
 # blacklist
 bl = tiers2blacklist(list("ecg_depression",
-                          c('max_cardio')))
+                          c('blood_sugar')))
 bl = rbind(bl, c("ecg_depression", "max_cardio"))
 bl
 
 # whitelist
-wl = matrix(c("cholesterol", "blood_pressure"),
+wl = matrix(c("chest_pain", "max_cardio"),
             ncol = 2, 
             byrow = TRUE, 
             dimnames = list(NULL, c("from", "to")))
 wl
+
 
 
 
@@ -347,16 +305,6 @@ fitted.simpler$age # parameter example
 summary(lm(max_cardio ~ cholesterol + blood_pressure, data = data.numeric))
 
 
-
-
-
-library(MASS)
-# maybe not useful
-
-
-
-
-
 # model validation
 
 xval = bn.cv(data.numeric, bn = "hc", 
@@ -426,8 +374,8 @@ library(gridExtra)
 
 str(data)
 
-bn_data.train <- as.data.frame(data.train)
-bn_data.test <- as.data.frame(data.test)
+#bn_data.train <- as.data.frame(data.train)
+#bn_data.test <- as.data.frame(data.test)
 
 fitted = bn.fit(dag, data = data)
 
@@ -474,6 +422,7 @@ plot(var_imp.nb)
 
 confusion_matrix_tab.nb <- table(predict.nb, bn_data.test$hearth_disease)
 accuracy.nb <- sum(diag(confusion_matrix_tab.nb))/sum(confusion_matrix_tab.nb)*100
+accuracy.nb
 ###############################################################
 
 ## Tree-Augmented Naive Bayes 
