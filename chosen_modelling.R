@@ -205,14 +205,11 @@ graphviz.plot(ug, layout = "fdp", shape = "ellipse") # NO
 
 ###############################################################
 
-dag <- aracne(data.numeric, #TODO set threshold
+dag1 <- aracne(data.numeric, #TODO set threshold
               debug = TRUE) # OK
-dag # infos bayesian network
-plot(dag)
+dag1 # infos bayesian network
+plot(dag1)
 
-dag <- aracne(data.factor, debug = TRUE) 
-dag # infos bayesian network
-plot(dag)
 
 # blacklist
 bl = tiers2blacklist(list("cholesterol",
@@ -318,7 +315,7 @@ strength.plot(avg.simpler,
 fitted.simpler = bn.fit(avg.simpler, data.numeric)
 fitted.simpler
 
-fitted.simpler$age # parameter example
+fitted.simpler$blood_pressure # parameter example
 
 # summary of a possible linear relation
 summary(lm(hearth_disease ~ num_major_vessels + 
@@ -329,7 +326,6 @@ summary(lm(hearth_disease ~ num_major_vessels +
 
 # model validation
 
-#FIXME
 xval = bn.cv(data.numeric, bn = "aracne", 
              algorithm.args = list(blacklist = bl, 
                                    whitelist = wl),
@@ -338,7 +334,9 @@ xval = bn.cv(data.numeric, bn = "aracne",
                               n = 200), 
              runs = 10)
 
+
 err = numeric(10)
+summary(err)
 
 for (i in 1:10) {
   tt = table(unlist(sapply(xval[[i]], '[[', "observed")),
@@ -348,14 +346,17 @@ for (i in 1:10) {
 
 summary(err)
 
-
-predcor = structure(numeric(2),
-                    names = c("age", "cholesterol"))
+###############################################################à
+predcor = structure(numeric(5),
+                    names = c("hearth_disease",
+                              "cholesterol", "blood_sugar",
+                              "blood_pressure", "rest_cardio"))
 
 
 
 for (var in names(predcor)) {
-  xval = bn.cv(data.numeric, bn = "hc", 
+  xval = bn.cv(data.numeric, 
+               bn = "aracne", 
                algorithm.args = list(blacklist = bl, 
                                      whitelist = wl),
                loss = "cor-lw", 
@@ -365,22 +366,10 @@ for (var in names(predcor)) {
   predcor[var] = mean(sapply(xval, function(x) attr(x, "mean")))
 }
 
-round(predcor, digits = 3)
+
+round(predcor, digits = 2)
 
 
 mean(predcor)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###############################################################
